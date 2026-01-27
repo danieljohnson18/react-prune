@@ -18,15 +18,17 @@
   },
   "keywords": [
     "react",
-    "analysis",
-    "nextjs",
     "react-native",
-    "expo",
-    "remix",
-    "vite",
-    "react-native-web",
+    "nextjs",
+    "analysis",
     "dead-code",
-    "imports"
+    "imports",
+    "dependency-analysis",
+    "bundle-size",
+    "prune",
+    "typescript",
+    "developer-tools",
+    "cli"
   ],
   "author": "Daniel Arikawe",
   "license": "MIT",
@@ -41,7 +43,7 @@
     "url": "https://github.com/danieljohnson18/react-prune/issues"
   },
   "homepage": "https://github.com/danieljohnson18/react-prune#readme",
-  "description": "",
+  "description": "A powerful CLI tool to monitor package usage, analyze component imports, and detect dead code across React, Next.js, and React Native applications.",
   "dependencies": {
     "boxen": "^8.0.1",
     "chalk": "^5.6.2",

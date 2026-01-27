@@ -1,5 +1,9 @@
 # react-prune ✂️
 
+[![npm version](https://img.shields.io/npm/v/react-prune)](https://www.npmjs.com/package/react-prune)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm downloads](https://img.shields.io/npm/dm/react-prune)](https://www.npmjs.com/package/react-prune)
+
 > **Monitor usage of packages and component imports across your React, Next.js, and React Native apps.**
 
 `react-prune` is a powerful CLI tool designed to help you maintain a healthy codebase by identifying unused files, analyzing package usage, and estimating dependency sizes.
