@@ -6,7 +6,7 @@
 
 > **Static analysis for identifying unused files and package usage in React-based codebases.**
 
-`react-prune` is a lightweight CLI tool that analyzes your React, Next.js, and React Native projects to surface **unused local files** and **package import usage**, helping you reduce dead code and dependency bloat.
+`react-prune` is a lightweight CLI tool that analyzes your React, Next.js, Vite, and React Native projects to surface **unused local files**, **unused exports**, and **package import usage**, helping you reduce dead code and dependency bloat.
 
 ---
 
@@ -21,11 +21,14 @@
 - **🧹 Unused File Detection**
   Identifies local source files that are never imported anywhere in the project.
 
-- **⚛️ React Ecosystem Support**
-  Works with React, Next.js (Pages & App Router), and React Native projects.
+- **📝 Unused Export Detection**
+  Finds named exports (functions, components, constants) that are defined but never used.
+
+- **🔍 Export/Component Search**
+  Search for a component or function to see **how many times it’s used** and **all file references with line numbers**.
 
 - **📊 CLI-Friendly Output**
-  Displays results in readable tables or as structured JSON for automation.
+  Displays results in readable tables.
 
 ---
 
@@ -61,29 +64,76 @@ npx react-prune
 
 ## 🛠 Usage
 
-Run from the **root of your project**:
+Run from the **root of your project**.
+
+### Analyze the project
 
 ```bash
-react-prune
+react-prune analyze
 ```
 
-### Options
+#### Options
 
-| Option        | Description                                |
-| ------------- | ------------------------------------------ |
-| `--json`      | Output the report as JSON                  |
-| `--no-size`   | Skip package size calculation              |
-| `--limit <n>` | Limit displayed package rows (default: 50) |
+| Option         | Description                                |
+| -------------- | ------------------------------------------ |
+| `--json`       | Output the report as JSON                  |
+| `--no-size`    | Skip package size calculation              |
+| `--no-exports` | Skip unused export analysis                |
+| `--limit <n>`  | Limit displayed package rows (default: 50) |
 
-### Example
+---
+
+### Search for a component or export
 
 ```bash
-react-prune --limit 20
+react-prune find <exportName>
+```
+
+#### Example
+
+```bash
+react-prune find Button
+```
+
+Output:
+
+```
+'Button' is used 4 time(s):
+ - src/components/Header.tsx:12
+ - src/components/Footer.tsx:8
+ - src/pages/index.tsx:22
+ - src/pages/about.tsx:15
 ```
 
 ---
 
-## 📊 Example Output
+### Check the size of a specific npm package
+
+```bash
+react-prune size <packageName>
+```
+
+#### Example
+
+```bash
+react-prune size react
+```
+
+Output:
+
+```
+📦 react size: 312 KB
+```
+
+If the package is not installed:
+
+```
+Package 'some-package' not found in node_modules.
+```
+
+---
+
+## 📊 Example Output (Analyze)
 
 ```text
 ╭─────────────────────────╮
@@ -104,6 +154,14 @@ react-prune --limit 20
 
 src/components/OldButton.tsx
 src/utils/deprecated-helper.ts
+
+╭─────────────────────────╮
+│ ⚠️ Unused Exports (3)   │
+╰─────────────────────────╯
+
+src/hooks/useMetrics.ts            useOldMetric
+src/utils/formatters.ts            formatCurrency
+src/components/OldButton.tsx      OldButton
 ```
 
 ---
@@ -114,27 +172,25 @@ src/utils/deprecated-helper.ts
    Recursively scans `.js`, `.jsx`, `.ts`, and `.tsx` files (excluding `node_modules`, `.next`, `dist`, etc.).
 
 2. **AST Parsing**
-   Uses `ts-morph` to parse TypeScript/JavaScript ASTs for accurate import analysis.
+   Uses `ts-morph` to parse TypeScript/JavaScript ASTs for accurate import/export analysis.
 
 3. **Dependency Resolution**
    Differentiates between local file imports and external package imports.
 
 4. **Static Usage Mapping**
-   Tracks which files and packages are actually referenced in the project.
+   Tracks which files, exports, and packages are actually referenced in the project.
 
 ---
 
-## ⚠️ Limitations (Important)
+## ⚠️ Limitations
 
 - This is **static analysis** — dynamic imports and runtime usage may not be detected.
-- Files referenced only via tooling configuration (e.g. Storybook, tests, build scripts) may appear unused.
-- Package size estimates are approximate and based on disk size, not bundle size.
+- Files referenced only via tooling (e.g., Storybook, tests) may appear unused.
+- Package size estimates are **disk-based**, not bundle size.
 
 ---
 
 ## 🤝 Contributing
-
-Contributions are welcome.
 
 ```bash
 git clone https://github.com/danieljohnson18/react-prune.git
@@ -146,7 +202,9 @@ npm run dev
 Test locally:
 
 ```bash
-node dist/cli.js
+node dist/cli.js analyze
+node dist/cli.js find Button
+node dist/cli.js size react
 ```
 
 ---
