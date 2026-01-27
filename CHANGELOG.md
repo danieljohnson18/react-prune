@@ -1,5 +1,11 @@
 # react-prune
 
+## 1.2.0
+
+### Minor Changes
+
+- aca51e8: feat: added detection for unused exports in source files
+
 ## 1.1.1
 
 ### Patch Changes
