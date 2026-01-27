@@ -1,5 +1,12 @@
 # react-prune
 
+## 1.2.2
+
+### Patch Changes
+
+- 320b3a2: Fix: Ensure `--json` option works correctly in CLI and outputs valid JSON by handling circular references.
+  Fix: Add silent mode to analyzer for clean JSON output.
+
 ## 1.2.1
 
 ### Patch Changes
