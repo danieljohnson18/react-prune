@@ -10,7 +10,11 @@
     "dev": "tsup --watch",
     "lint": "eslint src/**",
     "format": "prettier --write .",
+    "prepublishOnly": "npm run build",
     "release": "changeset publish"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "react",
