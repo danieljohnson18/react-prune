@@ -1,6 +1,6 @@
 import { Project, SyntaxKind } from "ts-morph";
-import chalk from "chalk";
-import { glob } from "glob";
+import pc from "picocolors";
+import glob from "fast-glob";
 import path from "path";
 import fs from "fs";
 
@@ -52,7 +52,7 @@ function getPackageSize(rootPath: string, packageName: string): string {
 }
 
 export async function analyzeProject(rootPath: string): Promise<UsageReport> {
-  console.log(chalk.green(`Analyzing project at ${rootPath}`));
+  console.log(pc.green(`Analyzing project at ${rootPath}`));
 
   // 1. Find all files
   const files = await glob("**/*.{js,jsx,ts,tsx}", {
@@ -69,7 +69,7 @@ export async function analyzeProject(rootPath: string): Promise<UsageReport> {
     absolute: true
   });
 
-  console.log(chalk.blue(`Found ${files.length} files to analyze.`));
+  console.log(pc.blue(`Found ${files.length} files to analyze.`));
 
   // 2. Initialize ts-morph project
   const project = new Project({
@@ -81,7 +81,7 @@ export async function analyzeProject(rootPath: string): Promise<UsageReport> {
     try {
       project.addSourceFileAtPath(file);
     } catch (e) {
-      console.warn(chalk.yellow(`Skipping file ${file} due to load error:`), e);
+      console.warn(pc.yellow(`Skipping file ${file} due to load error:`), e);
     }
   });
 
