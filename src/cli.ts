@@ -92,6 +92,45 @@ program
           })
         );
       }
+
+      // Unused Exports
+      const unusedExportsEntries = Object.entries(report.unusedExports);
+      if (unusedExportsEntries.length > 0) {
+        const totalUnusedExports = unusedExportsEntries.reduce(
+          (acc, [, exports]) => acc + exports.length,
+          0
+        );
+        const unusedExportsTable = new Table({
+          head: [pc.yellow("File"), pc.yellow("Unused Exports")],
+          colWidths: [40, 40],
+          wordWrap: true
+        });
+
+        console.log(
+          boxen(
+            pc.bold(`⚠️  Potential Unused Exports (${totalUnusedExports})`),
+            {
+              padding: 1,
+              margin: 1,
+              borderStyle: "round",
+              borderColor: "yellow"
+            }
+          )
+        );
+
+        unusedExportsEntries.slice(0, 50).forEach(([file, exports]) => {
+          unusedExportsTable.push([file, exports.join(", ")]);
+        });
+        console.log(unusedExportsTable.toString());
+
+        if (unusedExportsEntries.length > 50) {
+          console.log(
+            pc.gray(
+              `...and ${unusedExportsEntries.length - 50} more files with unused exports.`
+            )
+          );
+        }
+      }
     } catch (error) {
       console.error(pc.red("Analysis failed:"), error);
       process.exit(1);

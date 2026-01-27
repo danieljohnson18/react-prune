@@ -8,6 +8,7 @@ export interface UsageReport {
   packages: Record<string, { count: number; size: string }>;
   components: Record<string, number>;
   unusedFiles: string[];
+  unusedExports: Record<string, string[]>;
 }
 
 // Helper to calculate folder size recursively
@@ -254,9 +255,84 @@ export async function analyzeProject(rootPath: string): Promise<UsageReport> {
     })
     .map(([file]) => file);
 
+  const unusedExports: Record<string, string[]> = {};
+
+  // 5. Check for unused exports
+  for (const sourceFile of project.getSourceFiles()) {
+    const filePath = sourceFile.getFilePath();
+    const relativePath = path.relative(rootPath, filePath);
+
+    // Skip known entry points/framework files from export analysis
+    if (
+      filePath.includes("pages/") ||
+      filePath.includes("app/") ||
+      filePath.endsWith("main.tsx") ||
+      filePath.endsWith("index.tsx") ||
+      filePath.endsWith("index.js") ||
+      filePath.endsWith("App.tsx") ||
+      filePath.endsWith("App.js") ||
+      unused.includes(filePath) // Skip files already marked as unused
+    ) {
+      continue;
+    }
+
+    const exportedDeclarations = sourceFile.getExportedDeclarations();
+    const fileUnusedExports: string[] = [];
+
+    for (const [name, declarations] of exportedDeclarations) {
+      let isUsed = false;
+
+      // We consider it used if it has references in OTHER files
+      // getReferencesAsNodes() is expensive, so we might need a cheaper check?
+      // But for accuracy we need references.
+
+      for (const decl of declarations) {
+        if (
+          SyntaxKind.VariableDeclaration === decl.getKind() ||
+          SyntaxKind.FunctionDeclaration === decl.getKind() ||
+          SyntaxKind.ClassDeclaration === decl.getKind() ||
+          SyntaxKind.InterfaceDeclaration === decl.getKind() ||
+          SyntaxKind.TypeAliasDeclaration === decl.getKind() ||
+          SyntaxKind.EnumDeclaration === decl.getKind()
+        ) {
+          try {
+            // @ts-ignore
+            const refs = decl.findReferencesAsNodes();
+            for (const ref of refs) {
+              const refSourceFile = ref.getSourceFile();
+              if (refSourceFile.getFilePath() !== filePath) {
+                isUsed = true;
+                break;
+              }
+            }
+          } catch (e) {
+            // If error, assume used to be safe
+            isUsed = true;
+          }
+        } else {
+          // For other kinds (like ExportSpecifier), we might need different handling
+          // or assume used.
+          // default export is usually a FunctionDeclaration or ClassDeclaration,
+          // but could be an expression.
+          isUsed = true; // Skip complex cases for now
+        }
+        if (isUsed) break;
+      }
+
+      if (!isUsed) {
+        fileUnusedExports.push(name);
+      }
+    }
+
+    if (fileUnusedExports.length > 0) {
+      unusedExports[relativePath] = fileUnusedExports;
+    }
+  }
+
   return {
     packages: reportPackages,
     components: localUsage,
-    unusedFiles: unused
+    unusedFiles: unused,
+    unusedExports
   };
 }

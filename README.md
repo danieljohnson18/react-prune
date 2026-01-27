@@ -13,6 +13,7 @@
 - **📦 Package Analysis**: Scans your codebase to count how many times each npm package is imported.
 - **⚖️ Size Estimation**: Estimates the size of your used packages directly from `node_modules` to help you identify heavy dependencies.
 - **🧹 Dead Code Detection**: Identifies local component files that are _never_ imported, helping you prune dead code.
+- **🔍 Unused Exports**: Detects named exports that are defined but never used in other files.
 - **⚛️ Framework Agnostic**: Works seamlessly with React, Next.js (Pages & App Router), and React Native.
 - **📊 Visual Dashboard**: Provides a beautiful, easy-to-read command-line dashboard using ASCII tables.
 
@@ -88,6 +89,21 @@ The tool will scan your project (ignoring `node_modules`, `dist`, `.next`, etc.)
 ├────────────────────────────────────────────────────────────────────────────────┤
 │ src/utils/deprecated-helper.ts                                                 │
 └────────────────────────────────────────────────────────────────────────────────┘
+
+ ╭─────────────────────────╮
+ │                         │
+ │   ⚠️  Potential         │
+ │   Unused Exports        │
+ │                         │
+ ╰─────────────────────────╯
+
+ ┌────────────────────────────────────────┬────────────────────────────────────────┐
+ │ File                                   │ Unused Exports                         │
+ ├────────────────────────────────────────┼────────────────────────────────────────┤
+ │ src/hooks/useMetrics.ts                │ useOldMetric                           │
+ ├────────────────────────────────────────┼────────────────────────────────────────┤
+ │ src/utils/formatters.ts                │ formatCurrency                         │
+ └────────────────────────────────────────┴────────────────────────────────────────┘
 ```
 
 ## ⚙️ How it Works
