@@ -1,5 +1,11 @@
 # react-prune
 
+## 1.2.1
+
+### Patch Changes
+
+- ebd9c7b: refactor: restructured analyzer and added unit tests
+
 ## 1.2.0
 
 ### Minor Changes
