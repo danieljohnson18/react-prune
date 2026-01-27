@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import pc from "picocolors";
+import path from "path";
 import { analyzeProject } from "./analyzer";
 // @ts-ignore
 import Table from "cli-table3";
@@ -17,12 +18,13 @@ program
   .version("1.0.0");
 
 program
-  .command("analyze")
+  .command("analyze [directory]")
   .description("Analyze the current project for package and component usage")
-  .action(async () => {
+  .action(async (directory) => {
     console.log(pc.blue("Starting analysis..."));
     try {
-      const report = await analyzeProject(process.cwd());
+      const targetDir = directory ? path.resolve(directory) : process.cwd();
+      const report = await analyzeProject(targetDir);
 
       // Package Usage Table
       const packageTable = new Table({

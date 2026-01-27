@@ -72,9 +72,16 @@ export async function analyzeProject(rootPath: string): Promise<UsageReport> {
   console.log(pc.blue(`Found ${files.length} files to analyze.`));
 
   // 2. Initialize ts-morph project
-  const project = new Project({
+  const tsConfigPath = path.join(rootPath, "tsconfig.json");
+  const projectConfig: any = {
     skipAddingFilesFromTsConfig: true
-  });
+  };
+
+  if (fs.existsSync(tsConfigPath)) {
+    projectConfig.tsConfigFilePath = tsConfigPath;
+  }
+
+  const project = new Project(projectConfig);
 
   // Add files to project
   files.forEach((file) => {
@@ -135,6 +142,46 @@ export async function analyzeProject(rootPath: string): Promise<UsageReport> {
           // ignore resolution errors
         }
       } else {
+        // Check if it's a path alias or non-relative local import
+        let resolvedLocalFile: string | undefined;
+
+        // Try ts-morph resolution first (if tsconfig loaded)
+        try {
+          const resolvedSourceFile = imp.getModuleSpecifierSourceFile();
+          if (resolvedSourceFile) {
+            resolvedLocalFile = resolvedSourceFile.getFilePath();
+          }
+        } catch (e) {}
+
+        // Fallback: Check if the module specifier matches a known local file
+        // relative to baseUrl (src) or just fuzzy match
+        if (!resolvedLocalFile) {
+          const possibleMatches = files.filter((f) =>
+            f.includes(moduleSpecifier)
+          );
+          if (possibleMatches.length > 0) {
+            for (const match of possibleMatches) {
+              const normalizedMatch = match.replace(/\\/g, "/");
+              if (
+                normalizedMatch.endsWith(`${moduleSpecifier}.tsx`) ||
+                normalizedMatch.endsWith(`${moduleSpecifier}.ts`) ||
+                normalizedMatch.endsWith(`${moduleSpecifier}/index.tsx`)
+              ) {
+                resolvedLocalFile = match;
+                break;
+              }
+            }
+          }
+        }
+
+        if (resolvedLocalFile) {
+          const relativeTry = path.relative(rootPath, resolvedLocalFile);
+          if (localUsage.hasOwnProperty(relativeTry)) {
+            localUsage[relativeTry]++;
+            continue; // Skip package counting
+          }
+        }
+
         // Package Import
         let packageName = moduleSpecifier;
         if (moduleSpecifier.startsWith("@")) {
