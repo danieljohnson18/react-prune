@@ -1,5 +1,11 @@
 # react-prune
 
+## 1.1.1
+
+### Patch Changes
+
+- a3f68a7: fix: improved import resolution for path aliases (e.g. `components/*`) and non-relative local imports
+
 ## 1.1.0
 
 ### Minor Changes
