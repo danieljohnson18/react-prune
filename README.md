@@ -4,136 +4,155 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm downloads](https://img.shields.io/npm/dm/react-prune)](https://www.npmjs.com/package/react-prune)
 
-> **Monitor usage of packages and component imports across your React, Next.js, and React Native apps.**
+> **Static analysis for identifying unused files and package usage in React-based codebases.**
 
-`react-prune` is a powerful CLI tool designed to help you maintain a healthy codebase by identifying unused files, analyzing package usage, and estimating dependency sizes.
+`react-prune` is a lightweight CLI tool that analyzes your React, Next.js, and React Native projects to surface **unused local files** and **package import usage**, helping you reduce dead code and dependency bloat.
+
+---
 
 ## 🚀 Features
 
-- **📦 Package Analysis**: Scans your codebase to count how many times each npm package is imported.
-- **⚖️ Size Estimation**: Estimates the size of your used packages directly from `node_modules` to help you identify heavy dependencies.
-- **🧹 Dead Code Detection**: Identifies local component files that are _never_ imported, helping you prune dead code.
-- **🔍 Unused Exports**: Detects named exports that are defined but never used in other files.
-- **⚛️ Framework Agnostic**: Works seamlessly with React, Next.js (Pages & App Router), and React Native.
-- **📊 Visual Dashboard**: Provides a beautiful, easy-to-read command-line dashboard using ASCII tables.
+- **📦 Package Usage Analysis**
+  Counts how often each external npm package is imported across your codebase.
+
+- **⚖️ Optional Package Size Estimation**
+  Estimates package sizes from `node_modules` to highlight heavy dependencies.
+
+- **🧹 Unused File Detection**
+  Identifies local source files that are never imported anywhere in the project.
+
+- **⚛️ React Ecosystem Support**
+  Works with React, Next.js (Pages & App Router), and React Native projects.
+
+- **📊 CLI-Friendly Output**
+  Displays results in readable tables or as structured JSON for automation.
+
+---
 
 ## 📦 Installation
 
-To save `react-prune` to your `package.json` (recommended as a Dev Dependency):
+Install as a dev dependency (recommended):
 
-### Using npm
+### npm
 
 ```bash
 npm install -D react-prune
 ```
 
-### Using yarn
+### yarn
 
 ```bash
 yarn add -D react-prune
 ```
 
-### Using pnpm
+### pnpm
 
 ```bash
 pnpm add -D react-prune
 ```
 
-You can also run it one-off using `npx`:
+Or run once via `npx`:
 
 ```bash
-npx react-prune analyze
+npx react-prune
 ```
+
+---
 
 ## 🛠 Usage
 
-Navigate to the root of your project and run:
+Run from the **root of your project**:
 
 ```bash
-react-prune analyze
+react-prune
 ```
 
-The tool will scan your project (ignoring `node_modules`, `dist`, `.next`, etc.) and output a report.
+### Options
 
-### Example Output
+| Option        | Description                                |
+| ------------- | ------------------------------------------ |
+| `--json`      | Output the report as JSON                  |
+| `--no-size`   | Skip package size calculation              |
+| `--limit <n>` | Limit displayed package rows (default: 50) |
+
+### Example
+
+```bash
+react-prune --limit 20
+```
+
+---
+
+## 📊 Example Output
 
 ```text
 ╭─────────────────────────╮
-│                         │
 │   📦 Package Usage      │
-│   Report                │
-│                         │
 ╰─────────────────────────╯
 
-┌────────────────────────────────────────┬───────────────┬───────────────┐
-│ Package Name                           │ Usage Count   │ Est. Size     │
-├────────────────────────────────────────┼───────────────┼───────────────┤
-│ react                                  │ 142           │ 312 KB        │
-├────────────────────────────────────────┼───────────────┼───────────────┤
-│ lodash                                 │ 5             │ 4.2 MB        │
-├────────────────────────────────────────┼───────────────┼───────────────┤
-│ framer-motion                          │ 23            │ 1.1 MB        │
-└────────────────────────────────────────┴───────────────┴───────────────┘
+┌────────────────────────┬────────┬──────────┐
+│ Package                │ Count  │ Size     │
+├────────────────────────┼────────┼──────────┤
+│ react                  │ 142    │ 312 KB   │
+│ lodash                 │ 5      │ 4.2 MB   │
+│ framer-motion          │ 23     │ 1.1 MB   │
+└────────────────────────┴────────┴──────────┘
 
 ╭─────────────────────────╮
-│                         │
-│   ⚠️  Potential         │
-│   Unused Files          │
-│                         │
+│ ⚠️ Unused Files (2)     │
 ╰─────────────────────────╯
 
-┌────────────────────────────────────────────────────────────────────────────────┐
-│ File Path                                                                      │
-├────────────────────────────────────────────────────────────────────────────────┤
-│ src/components/OldButton.tsx                                                   │
-├────────────────────────────────────────────────────────────────────────────────┤
-│ src/utils/deprecated-helper.ts                                                 │
-└────────────────────────────────────────────────────────────────────────────────┘
-
- ╭─────────────────────────╮
- │                         │
- │   ⚠️  Potential         │
- │   Unused Exports        │
- │                         │
- ╰─────────────────────────╯
-
- ┌────────────────────────────────────────┬────────────────────────────────────────┐
- │ File                                   │ Unused Exports                         │
- ├────────────────────────────────────────┼────────────────────────────────────────┤
- │ src/hooks/useMetrics.ts                │ useOldMetric                           │
- ├────────────────────────────────────────┼────────────────────────────────────────┤
- │ src/utils/formatters.ts                │ formatCurrency                         │
- └────────────────────────────────────────┴────────────────────────────────────────┘
+src/components/OldButton.tsx
+src/utils/deprecated-helper.ts
 ```
 
-## ⚙️ How it Works
+---
 
-1.  **File Scanning**: It uses `glob` to recursively find all `.js`, `.jsx`, `.ts`, and `.tsx` files in your project.
-2.  **AST Analysis**: It uses `ts-morph` to parse the Abstract Syntax Tree (AST) of each file. This is far more accurate than Regex as it understands the code structure.
-3.  **Import Resolution**: It resolves import paths to physical files on disk to track internal usage.
-4.  **Size Calculation**: It looks up the package in your local `node_modules` folder and calculates the total size of the directory to give you an estimate of the impact.
+## ⚙️ How It Works
+
+1. **File Discovery**
+   Recursively scans `.js`, `.jsx`, `.ts`, and `.tsx` files (excluding `node_modules`, `.next`, `dist`, etc.).
+
+2. **AST Parsing**
+   Uses `ts-morph` to parse TypeScript/JavaScript ASTs for accurate import analysis.
+
+3. **Dependency Resolution**
+   Differentiates between local file imports and external package imports.
+
+4. **Static Usage Mapping**
+   Tracks which files and packages are actually referenced in the project.
+
+---
+
+## ⚠️ Limitations (Important)
+
+- This is **static analysis** — dynamic imports and runtime usage may not be detected.
+- Files referenced only via tooling configuration (e.g. Storybook, tests, build scripts) may appear unused.
+- Package size estimates are approximate and based on disk size, not bundle size.
+
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome!
+Contributions are welcome.
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/danieljohnson18/react-prune.git
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Run the build in watch mode:
-    ```bash
-    npm run dev
-    ```
-4.  Test the analyzer on the project itself:
-    ```bash
-    node dist/cli.js analyze
-    ```
+```bash
+git clone https://github.com/danieljohnson18/react-prune.git
+cd react-prune
+npm install
+npm run dev
+```
+
+Test locally:
+
+```bash
+node dist/cli.js
+```
+
+---
 
 ## 📄 License
 
 MIT © [Daniel Arikawe](https://github.com/danieljohnson18)
+
+---

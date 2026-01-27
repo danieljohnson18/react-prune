@@ -2,139 +2,88 @@
 import { Command } from "commander";
 import pc from "picocolors";
 import path from "path";
-import { analyzeProject } from "./analyzer";
-// @ts-ignore
 import Table from "cli-table3";
-// @ts-ignore
 import boxen from "boxen";
+import { analyzeProject } from "./analyzer";
 
 const program = new Command();
 
 program
   .name("react-prune")
   .description(
-    "Monitor usage of packages and component imports across your React/Next.js/React Native app"
+    "Analyze React/Next/Vite/React Native codebases for unused files, exports, and packages"
   )
-  .version("1.0.0");
+  .version(require("../package.json").version)
+  .option("--no-size", "Skip calculating package sizes")
+  .option("--no-exports", "Skip analyzing unused exports")
+  .option("--limit <n>", "Limit output rows", "50");
 
-program
-  .command("analyze [directory]")
-  .description("Analyze the current project for package and component usage")
-  .action(async (directory) => {
-    console.log(pc.blue("Starting analysis..."));
-    try {
-      const targetDir = directory ? path.resolve(directory) : process.cwd();
-      const report = await analyzeProject(targetDir);
+program.action(async (opts) => {
+  const rootPath = process.cwd();
+  const limit = Number(opts.limit);
 
-      // Package Usage Table
-      const packageTable = new Table({
-        head: [
-          pc.cyan("Package Name"),
-          pc.cyan("Usage Count"),
-          pc.cyan("Est. Size")
-        ],
-        colWidths: [40, 15, 15]
-      });
-
-      const sortedPackages = Object.entries(report.packages).sort(
-        (a, b) => b[1].count - a[1].count
-      );
-
-      sortedPackages.slice(0, 50).forEach(([pkg, data]) => {
-        packageTable.push([pkg, data.count, data.size]);
-      });
-
-      console.log(
-        boxen(pc.bold("📦 Package Usage Report"), {
-          padding: 1,
-          margin: 1,
-          borderStyle: "round",
-          borderColor: "green"
-        })
-      );
-      console.log(packageTable.toString());
-      if (sortedPackages.length > 50) {
-        console.log(
-          pc.gray(`...and ${sortedPackages.length - 50} more packages.`)
-        );
-      }
-
-      // Unused Files
-      if (report.unusedFiles.length > 0) {
-        const unusedTable = new Table({
-          head: [pc.yellow("File Path")],
-          colWidths: [80]
-        });
-
-        console.log(
-          boxen(
-            pc.bold(
-              `⚠️  Potential Unused Files (${report.unusedFiles.length})`
-            ),
-            {
-              padding: 1,
-              margin: 1,
-              borderStyle: "round",
-              borderColor: "yellow"
-            }
-          )
-        );
-
-        report.unusedFiles.forEach((file) => unusedTable.push([file]));
-        console.log(unusedTable.toString());
-      } else {
-        console.log(
-          boxen(pc.bold("✅ No unused files detected!"), {
-            padding: 1,
-            margin: 1,
-            borderStyle: "round",
-            borderColor: "green"
-          })
-        );
-      }
-
-      // Unused Exports
-      const unusedExportsEntries = Object.entries(report.unusedExports);
-      if (unusedExportsEntries.length > 0) {
-        const totalUnusedExports = unusedExportsEntries.reduce(
-          (acc, [, exports]) => acc + exports.length,
-          0
-        );
-        const unusedExportsTable = new Table({
-          head: [pc.yellow("File"), pc.yellow("Unused Exports")],
-          colWidths: [40, 40],
-          wordWrap: true
-        });
-
-        console.log(
-          boxen(
-            pc.bold(`⚠️  Potential Unused Exports (${totalUnusedExports})`),
-            {
-              padding: 1,
-              margin: 1,
-              borderStyle: "round",
-              borderColor: "yellow"
-            }
-          )
-        );
-
-        unusedExportsEntries.slice(0, 50).forEach(([file, exports]) => {
-          unusedExportsTable.push([file, exports.join(", ")]);
-        });
-        console.log(unusedExportsTable.toString());
-
-        if (unusedExportsEntries.length > 50) {
-          console.log(
-            pc.gray(
-              `...and ${unusedExportsEntries.length - 50} more files with unused exports.`
-            )
-          );
-        }
-      }
-    } catch (error) {
-      console.error(pc.red("Analysis failed:"), error);
-      process.exit(1);
-    }
+  const report = await analyzeProject({
+    rootPath,
+    includeSizes: opts.size,
+    analyzeExports: opts.exports
   });
 
-program.parse(process.argv);
+  // ---------- Packages ----------
+  console.log(
+    boxen(pc.bold("📦 Package Usage"), {
+      padding: 1,
+      borderColor: "green",
+      borderStyle: "round"
+    })
+  );
+
+  const packageTable = new Table({ head: ["Package", "Count", "Size"] });
+  Object.entries(report.packages)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, limit)
+    .forEach(([pkg, data]) => packageTable.push([pkg, data.count, data.size]));
+
+  console.log(packageTable.toString());
+
+  // ---------- Unused Files ----------
+  if (report.unusedFiles.length) {
+    console.log(
+      boxen(pc.bold(`⚠️ Unused Files (${report.unusedFiles.length})`), {
+        padding: 1,
+        borderColor: "yellow"
+      })
+    );
+    report.unusedFiles.forEach((f) => console.log(pc.yellow(f)));
+  } else {
+    console.log(
+      boxen(pc.green("✅ No unused files detected!"), {
+        padding: 1,
+        borderColor: "green"
+      })
+    );
+  }
+
+  // ---------- Unused Exports ----------
+  const unusedExportsEntries = Object.entries(report.unusedExports);
+  if (unusedExportsEntries.length) {
+    console.log(
+      boxen(
+        pc.bold(`⚠️ Potential Unused Exports (${unusedExportsEntries.length})`),
+        {
+          padding: 1,
+          borderColor: "yellow"
+        }
+      )
+    );
+    const exportsTable = new Table({
+      head: ["File", "Unused Exports"],
+      wordWrap: true
+    });
+    unusedExportsEntries.slice(0, limit).forEach(([file, exports]) => {
+      exportsTable.push([file, exports.join(", ")]);
+    });
+    console.log(exportsTable.toString());
+  }
+});
+
+program.parse();
