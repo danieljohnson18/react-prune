@@ -57,7 +57,15 @@ export async function analyzeProject(rootPath: string): Promise<UsageReport> {
   // 1. Find all files
   const files = await glob("**/*.{js,jsx,ts,tsx}", {
     cwd: rootPath,
-    ignore: ["**/node_modules/**", "**/dist/**", "**/build/**", "**/.next/**"],
+    ignore: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/.next/**",
+      "**/coverage/**",
+      "**/*.config.{js,ts,cjs,mjs}", // Ignore config files
+      "**/.d.ts" // Ignore definition files
+    ],
     absolute: true
   });
 
@@ -177,13 +185,24 @@ export async function analyzeProject(rootPath: string): Promise<UsageReport> {
 
   const unused = Object.entries(localUsage)
     .filter(([file, count]) => {
+      // Known Entry Points & Framework specifics
       if (
         file.includes("pages/") ||
         file.includes("app/") ||
-        file.includes("main.tsx") ||
-        file.includes("index.tsx")
+        file.endsWith("main.tsx") ||
+        file.endsWith("index.tsx") ||
+        file.endsWith("index.js") ||
+        file.endsWith("App.tsx") ||
+        file.endsWith("App.js")
       )
         return false;
+
+      // Ignore files in the project root (usually configs, scripts, etc.)
+      // We check if the relative path contains a separator. If not, it's in the root.
+      const relative = path.relative(rootPath, file);
+      if (!relative.includes(path.sep)) {
+        return false;
+      }
       return count === 0;
     })
     .map(([file]) => file);

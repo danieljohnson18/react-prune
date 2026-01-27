@@ -18,16 +18,30 @@
 
 ## 📦 Installation
 
-You can run `react-prune` directly using `npx`:
+To save `react-prune` to your `package.json` (recommended as a Dev Dependency):
+
+### Using npm
+
+```bash
+npm install -D react-prune
+```
+
+### Using yarn
+
+```bash
+yarn add -D react-prune
+```
+
+### Using pnpm
+
+```bash
+pnpm add -D react-prune
+```
+
+You can also run it one-off using `npx`:
 
 ```bash
 npx react-prune analyze
-```
-
-Or install it globally:
-
-```bash
-npm install -g react-prune
 ```
 
 ## 🛠 Usage

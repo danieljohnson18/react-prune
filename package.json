@@ -39,6 +39,9 @@
     "type": "git",
     "url": "git+https://github.com/danieljohnson18/react-prune.git"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "bugs": {
     "url": "https://github.com/danieljohnson18/react-prune/issues"
   },

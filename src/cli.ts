@@ -59,27 +59,27 @@ program
 
       // Unused Files
       if (report.unusedFiles.length > 0) {
-        console.log(
-          boxen(chalk.bold("⚠️  Potential Unused Files"), {
-            padding: 1,
-            margin: 1,
-            borderStyle: "round",
-            borderColor: "yellow"
-          })
-        );
         const unusedTable = new Table({
           head: [chalk.yellow("File Path")],
           colWidths: [80]
         });
-        report.unusedFiles
-          .slice(0, 50)
-          .forEach((file) => unusedTable.push([file]));
+
+        console.log(
+          boxen(
+            chalk.bold(
+              `⚠️  Potential Unused Files (${report.unusedFiles.length})`
+            ),
+            {
+              padding: 1,
+              margin: 1,
+              borderStyle: "round",
+              borderColor: "yellow"
+            }
+          )
+        );
+
+        report.unusedFiles.forEach((file) => unusedTable.push([file]));
         console.log(unusedTable.toString());
-        if (report.unusedFiles.length > 50) {
-          console.log(
-            chalk.gray(`...and ${report.unusedFiles.length - 50} more files.`)
-          );
-        }
       } else {
         console.log(
           boxen(chalk.bold("✅ No unused files detected!"), {
