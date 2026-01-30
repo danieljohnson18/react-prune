@@ -220,11 +220,26 @@ export async function analyzeProject(
     };
   });
 
+  // 6️⃣ Run depcheck
+  let unusedDependencies: string[] = [];
+  try {
+    const depcheck = require("depcheck");
+    // We can't easily wait for this if not async, but analyzeProject is async.
+    const depcheckResult = await depcheck(rootPath, {
+      ignoreMatches: ["react-prune", ...((options as any).ignoreMatches || [])],
+      skipMissing: true
+    });
+    unusedDependencies = depcheckResult.dependencies;
+  } catch (e) {
+    if (!silent) console.warn(pc.yellow("Failed to run depcheck."));
+  }
+
   return {
     packages,
     unusedFiles,
     unusedExports,
     usedExports,
+    unusedDependencies,
     sourceFiles
   };
 }

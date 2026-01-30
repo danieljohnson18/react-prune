@@ -9,6 +9,7 @@ export interface UsageReport {
   unusedFiles: string[];
   unusedExports: Record<string, string[]>;
   usedExports?: Record<string, Set<string>>;
+  unusedDependencies?: string[];
   sourceFiles?: Record<string, any>; // ts-morph SourceFile
 }
 

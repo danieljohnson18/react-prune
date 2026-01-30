@@ -5,6 +5,7 @@ import Table from "cli-table3";
 import boxen from "boxen";
 import path from "path";
 import { analyzeProject, UsageReport } from "./analyzer";
+import { getFileSize } from "./analyzer/file-size";
 import { SyntaxKind, Identifier } from "ts-morph";
 
 const program = new Command();
@@ -119,6 +120,28 @@ program
         console.log(table.toString());
       }
     }
+
+    // Unused Dependencies
+    if (report.unusedDependencies && report.unusedDependencies.length) {
+      const table = new Table({
+        head: [pc.yellow("Unused Dependencies")],
+        colWidths: [80]
+      });
+      report.unusedDependencies.slice(0, limit).forEach((d) => table.push([d]));
+      console.log(
+        boxen(
+          pc.bold(
+            `⚠️ Unused Dependencies (${report.unusedDependencies.length})`
+          ),
+          {
+            padding: 1,
+            borderColor: "yellow",
+            borderStyle: "round"
+          }
+        )
+      );
+      console.log(table.toString());
+    }
   });
 
 program
@@ -191,7 +214,10 @@ program
       console.log(
         pc.green(`'${exportName}' is used ${usageDetails.length} time(s):`)
       );
-      usageDetails.forEach((d) => console.log(` - ${d.file}:${d.line}`));
+      usageDetails.forEach((d) => {
+        const size = getFileSize(path.join(rootPath, d.file));
+        console.log(` - ${d.file}:${d.line} (${size})`);
+      });
     } else {
       console.log(pc.yellow(`'${exportName}' is not used anywhere.`));
     }

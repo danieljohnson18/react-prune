@@ -15,6 +15,9 @@
 - **📦 Package Usage Analysis**
   Counts how often each external npm package is imported across your codebase.
 
+- **🚫 Unused Dependency Detection**
+  Leverages `depcheck` to identify dependencies in `package.json` that are completely unused.
+
 - **⚖️ Optional Package Size Estimation**
   Estimates package sizes from `node_modules` to highlight heavy dependencies.
 
@@ -88,6 +91,8 @@ react-prune analyze
 ```bash
 react-prune find <exportName>
 ```
+
+Shows usage count and **file size** of each occurrence.
 
 #### Example
 
