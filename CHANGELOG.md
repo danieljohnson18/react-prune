@@ -1,5 +1,13 @@
 # react-prune
 
+## 1.3.0
+
+### Minor Changes
+
+- feat: add unused dependency detection via depcheck
+  feat: add file size estimation in find command
+  feat: add scripts/prune-check.sh for CI/CD
+
 ## 1.2.2
 
 ### Patch Changes
