@@ -2,11 +2,12 @@
 
 [![npm version](https://img.shields.io/npm/v/react-prune)](https://www.npmjs.com/package/react-prune)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![npm downloads](https://img.shields.io/npm/dm/react-prune)](https://www.npmjs.com/package/react-prune)
 
 > **Static analysis for identifying unused files and package usage in React-based codebases.**
 
-`react-prune` is a lightweight CLI tool that analyzes your React, Next.js, Vite, and React Native projects to surface **unused local files**, **unused exports**, and **package import usage**, helping you reduce dead code and dependency bloat.
+`react-prune` is a lightweight CLI tool that analyzes your React, Next.js, and React Native projects to surface **unused local files**, **unused exports**, and **dependency bloat**.
+
+v2.0 Re-written entirely in **Bash** for speed and simplicity.
 
 ---
 
@@ -15,55 +16,33 @@
 - **🔎 Component Usage Detection**
   Find where any component or function is used, including line numbers and file sizes.
 
-- **📦 Package Usage & Size Analysis**
-  Counts usage of external packages and checks **disk size** of dependencies in `node_modules` to spot bloat.
+- **📦 Package Size & Usage Analysis**
+  Checks **disk size** of dependencies in `node_modules` to spot heavy packages.
 
 - **🚫 Unused Dependency Detection**
   Leverages `depcheck` to identify dependencies in `package.json` that are completely unused.
 
-- **⚖️ Optional Package Size Estimation**
-  Estimates package sizes from `node_modules` to highlight heavy dependencies.
-
-- **🧹 Unused File Detection**
-  Identifies local source files that are never imported anywhere in the project.
-
-- **📝 Unused Export Detection**
-  Finds named exports (functions, components, constants) that are defined but never used.
-
-- **🔍 Export/Component Search**
-  Search for a component or function to see **how many times it’s used** and **all file references with line numbers**.
-
-- **📊 CLI-Friendly Output**
-  Displays results in readable tables.
+- **🧹 Unused File & Export Detection**
+  Identifies local source files and exports that are never imported anywhere in the project.
 
 ---
 
 ## 📦 Installation
 
-Install as a dev dependency (recommended):
-
-### npm
+Install globally or as a dev dependency:
 
 ```bash
+npm install -g react-prune
+# OR
 npm install -D react-prune
 ```
 
-### yarn
-
-```bash
-yarn add -D react-prune
-```
-
-### pnpm
-
-```bash
-pnpm add -D react-prune
-```
+Also compatible with `yarn` and `pnpm`.
 
 Or run once via `npx`:
 
 ```bash
-npx react-prune
+npx react-prune analyze
 ```
 
 ---
@@ -72,40 +51,33 @@ npx react-prune
 
 Run from the **root of your project**.
 
-### Analyze the project
+### 1. Analyze the project
+
+Runs a full health check: unused deps, package sizes, unused files, and unused exports.
 
 ```bash
 react-prune analyze
 ```
 
-#### Options
+_Note: This runs a sequence of bash scripts optimized for Next.js/React projects._
 
-| Option         | Description                                |
-| -------------- | ------------------------------------------ |
-| `--json`       | Output the report as JSON                  |
-| `--no-size`    | Skip package size calculation              |
-| `--no-exports` | Skip unused export analysis                |
-| `--limit <n>`  | Limit displayed package rows (default: 50) |
+### 2. Find Component Usage
 
----
-
-## 🔎 Finding Usage
-
-You can check where a specific component or function is used across your codebase.
+Search for a component, hook, or function to see exactly where it is used and how much it weighs.
 
 ```bash
-react-prune find <Name>
+react-prune find <Term>
 ```
 
-Example:
+**Example:**
 
 ```bash
 react-prune find Button
 ```
 
-Output:
+**Output:**
 
-```
+```text
 🔎 Searching for usage of 'Button'...
 ✅ Found 5 occurrences:
 
@@ -117,86 +89,47 @@ Total: 5 times
 
 ---
 
-### Check the size of a specific npm package
-
-```bash
-react-prune size <packageName>
-```
-
-#### Example
-
-```bash
-react-prune size react
-```
-
-Output:
-
-```
-📦 react size: 312 KB
-```
-
-If the package is not installed:
-
-```
-Package 'some-package' not found in node_modules.
-```
-
----
-
 ## 📊 Example Output (Analyze)
 
 ```text
-╭─────────────────────────╮
-│   📦 Package Usage      │
-╰─────────────────────────╯
+🚀 Starting React Prune Analysis...
 
-┌────────────────────────┬────────┬──────────┐
-│ Package                │ Count  │ Size     │
-├────────────────────────┼────────┼──────────┤
-│ react                  │ 142    │ 312 KB   │
-│ lodash                 │ 5      │ 4.2 MB   │
-│ framer-motion          │ 23     │ 1.1 MB   │
-└────────────────────────┴────────┴──────────┘
+📦 Checking for unused dependencies...
+Unused dependencies
+* framer-motion
 
-╭─────────────────────────╮
-│ ⚠️ Unused Files (2)     │
-╰─────────────────────────╯
+⚖️  Checking package sizes (top 15 heaviest)...
+4.2M lodash
+1.1M framer-motion
+312K react
 
-src/components/OldButton.tsx
-src/utils/deprecated-helper.ts
+🔍 Checking for unused files...
+⚠️  Unused file: src/components/OldButton.tsx
+⚠️  Unused file: src/utils/deprecated.ts
+found 2 unused files.
 
-╭─────────────────────────╮
-│ ⚠️ Unused Exports (3)   │
-╰─────────────────────────╯
-
-src/hooks/useMetrics.ts            useOldMetric
-src/utils/formatters.ts            formatCurrency
-src/components/OldButton.tsx      OldButton
+🔎 Checking for unused exports (heuristic)...
+⚠️  Unused export: useOldHook in src/hooks/useMetrics.ts
+found 1 unused exports.
 ```
 
 ---
 
-## ⚙️ How It Works
+## ⚙️ How It Works (v2 Bash Architecture)
 
-1. **File Discovery**
-   Recursively scans `.js`, `.jsx`, `.ts`, and `.tsx` files (excluding `node_modules`, `.next`, `dist`, etc.).
+The tool is now a collection of focused Bash scripts for maximum performance on Unix-based systems (macOS/Linux).
 
-2. **AST Parsing**
-   Uses `ts-morph` to parse TypeScript/JavaScript ASTs for accurate import/export analysis.
-
-3. **Dependency Resolution**
-   Differentiates between local file imports and external package imports.
-
-4. **Static Usage Mapping**
-   Tracks which files, exports, and packages are actually referenced in the project.
+1.  **`check_deps.sh`**: Wraps `depcheck` to find unused NPM packages.
+2.  **`check_package_sizes.sh`**: Uses `du` to calculate `node_modules` folder sizes.
+3.  **`check_unused_files.sh`**: Uses `find` and `grep` to detect unreferenced files (ignoring Next.js pages/layouts).
+4.  **`check_unused_exports.sh`**: Uses `grep` to find exported names that don't appear in import statements.
 
 ---
 
 ## ⚠️ Limitations
 
-- This is **static analysis** — dynamic imports and runtime usage may not be detected.
-- Files referenced only via tooling (e.g., Storybook, tests) may appear unused.
-- Package size estimates are **disk-based**, not bundle size.
+- **Platform**: Requires a Unix-like environment (macOS, Linux, WSL).
+- **Heuristic Analysis**: Since it uses `grep`/regex instead of AST parsing (for speed), extremely complex import aliasing might be missed, but false positives are minimized for standard React/Next.js patterns.
 
 ---
 
@@ -206,15 +139,13 @@ src/components/OldButton.tsx      OldButton
 git clone https://github.com/danieljohnson18/react-prune.git
 cd react-prune
 npm install
-npm run dev
+npm test
 ```
 
-Test locally:
+To test locally:
 
 ```bash
-node dist/cli.js analyze
-node dist/cli.js find Button
-node dist/cli.js size react
+./bin/react-prune analyze
 ```
 
 ---
@@ -222,5 +153,3 @@ node dist/cli.js size react
 ## 📄 License
 
 MIT © [Daniel Arikawe](https://github.com/danieljohnson18)
-
----
