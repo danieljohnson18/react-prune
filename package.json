@@ -1,16 +1,11 @@
 {
   "name": "react-prune",
-  "version": "2.0.1",
-  "main": "dist/index.js",
+  "version": "2.0.3",
   "bin": {
     "react-prune": "./bin/react-prune"
   },
   "scripts": {
-    "build": "tsup src/cli.ts --format cjs --dts",
-    "dev": "tsup src/cli.ts --watch",
-    "lint": "eslint src/**",
     "format": "prettier --write .",
-    "prepublishOnly": "npm run build",
     "release": "changeset publish",
     "test": "vitest"
   },
@@ -27,16 +22,14 @@
     "dependency-analysis",
     "bundle-size",
     "prune",
-    "typescript",
-    "developer-tools",
+    "bash",
     "cli"
   ],
   "author": "Daniel Arikawe",
   "license": "MIT",
   "files": [
     "bin",
-    "scripts",
-    "dist"
+    "scripts"
   ],
   "repository": {
     "type": "git",
@@ -51,23 +44,12 @@
   "homepage": "https://github.com/danieljohnson18/react-prune#readme",
   "description": "A powerful CLI tool to monitor package usage, analyze component imports, and detect dead code across React, Next.js, and React Native applications.",
   "dependencies": {
-    "boxen": "^8.0.1",
-    "cli-table3": "^0.6.5",
-    "commander": "^14.0.2",
-    "depcheck": "^1.4.7",
-    "fast-glob": "^3.3.3",
-    "picocolors": "^1.1.1",
-    "ts-morph": "^27.0.2"
+    "depcheck": "^1.4.7"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
-    "@types/depcheck": "^0.9.0",
-    "@types/glob": "^8.1.0",
     "@types/node": "^25.0.10",
-    "eslint": "^9.39.2",
     "prettier": "^3.8.1",
-    "tsup": "^8.5.1",
-    "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }
 }

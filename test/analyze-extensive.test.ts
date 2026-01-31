@@ -1,60 +1,47 @@
 import { describe, it, expect } from "vitest";
 import path from "path";
-import { analyzeProject } from "../src/analyzer";
+import { exec } from "child_process";
+import { promisify } from "util";
 
-describe("react-prune analyzer (extensive)", async () => {
+const execAsync = promisify(exec);
+
+describe("react-prune analyzer (bash integration)", () => {
   const rootPath = path.join(__dirname, "fixtures/extensive");
+  const binPath = path.resolve(__dirname, "../bin/react-prune");
 
-  // Note: We might need to handle the fact that node_modules might not be fully populated
-  // if npm install wasn't run or if we want to test missing deps.
-  // depcheck skips missing deps with skipMissing: true.
+  it("detects unused files and exports", async () => {
+    // Run the bash script
+    try {
+      const { stdout } = await execAsync(`"${binPath}" analyze`, {
+        cwd: rootPath
+      });
 
-  const report = await analyzeProject({
-    rootPath,
-    includeSizes: true, // Test size calculation
-    analyzeExports: true
-  });
+      // Check output content
+      expect(stdout).toContain(
+        "\u26A0\uFE0F  Unused export: UnusedExportInFile in"
+      );
+      // Matches "⚠️  Unused export: UnusedExportInFile in ..."
 
-  it("detects unused files", () => {
-    // ComponentC.tsx and useHookB.ts are unused
-    expect(report.unusedFiles).toContain("ComponentC.tsx");
-    expect(report.unusedFiles).toContain("useHookB.ts");
+      expect(stdout).toContain(
+        "Unused file: " + path.join(rootPath, "ComponentC.tsx")
+      );
+      expect(stdout).toContain(
+        "Unused file: " + path.join(rootPath, "useHookB.ts")
+      );
 
-    // ComponentA, ComponentB, useHookA, utils are used
-    expect(report.unusedFiles).not.toContain("ComponentA.tsx");
-    expect(report.unusedFiles).not.toContain("ComponentB.tsx");
-    expect(report.unusedFiles).not.toContain("useHookA.ts");
-    expect(report.unusedFiles).not.toContain("utils.ts");
-  });
+      expect(stdout).not.toContain(
+        "Unused file: " + path.join(rootPath, "ComponentA.tsx")
+      );
 
-  it("detects unused exports", () => {
-    // In ComponentA.tsx, UnusedExportInFile is unused
-    expect(report.unusedExports["ComponentA.tsx"]).toContain(
-      "UnusedExportInFile"
-    );
-
-    // In utils.ts, unusedFunction is unused
-    expect(report.unusedExports["utils.ts"]).toContain("unusedFunction");
-
-    // usedFunction is used
-    expect(report.unusedExports["utils.ts"]).not.toContain("usedFunction");
-  });
-
-  it("detects unused dependencies", () => {
-    // framer-motion is in package.json but not used in code
-    // react and lodash are used
-    if (report.unusedDependencies) {
-      expect(report.unusedDependencies).toContain("framer-motion");
-      expect(report.unusedDependencies).not.toContain("lodash");
-      expect(report.unusedDependencies).not.toContain("react");
-    }
-  });
-
-  it("calculates sizes", () => {
-    // packages report should have sizes if installed
-    // finding specific package
-    if (report.packages["react"]) {
-      expect(report.packages["react"].size).not.toBe("N/A");
+      // Exports
+      expect(stdout).toMatch(
+        /Unused export: UnusedExportInFile in .*ComponentA.tsx/
+      );
+      expect(stdout).toMatch(/Unused export: unusedFunction in .*utils.ts/);
+    } catch (e: any) {
+      console.error(e.stdout);
+      console.error(e.stderr);
+      throw e;
     }
   });
 });

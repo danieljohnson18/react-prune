@@ -1,5 +1,12 @@
 # react-prune
 
+## 2.0.3
+
+### Patch Changes
+
+- refactor: remove legacy `src` folder and unused dependencies (cleanup).
+- ecd7a70: fix: ensure CLI works when installed globally by correctly resolving symlink paths to scripts.
+
 ## 2.0.1
 
 ### Patch Changes
