@@ -12,8 +12,11 @@
 
 ## 🚀 Features
 
-- **📦 Package Usage Analysis**
-  Counts how often each external npm package is imported across your codebase.
+- **🔎 Component Usage Detection**
+  Find where any component or function is used, including line numbers and file sizes.
+
+- **📦 Package Usage & Size Analysis**
+  Counts usage of external packages and checks **disk size** of dependencies in `node_modules` to spot bloat.
 
 - **🚫 Unused Dependency Detection**
   Leverages `depcheck` to identify dependencies in `package.json` that are completely unused.
@@ -86,15 +89,15 @@ react-prune analyze
 
 ---
 
-### Search for a component or export
+## 🔎 Finding Usage
+
+You can check where a specific component or function is used across your codebase.
 
 ```bash
-react-prune find <exportName>
+react-prune find <Name>
 ```
 
-Shows usage count and **file size** of each occurrence.
-
-#### Example
+Example:
 
 ```bash
 react-prune find Button
@@ -103,11 +106,13 @@ react-prune find Button
 Output:
 
 ```
-'Button' is used 4 time(s):
- - src/components/Header.tsx:12
- - src/components/Footer.tsx:8
- - src/pages/index.tsx:22
- - src/pages/about.tsx:15
+🔎 Searching for usage of 'Button'...
+✅ Found 5 occurrences:
+
+src/app/page.tsx: 10: <Button>Click me</Button> [5 KB]
+src/components/ui/button.tsx: 12: export { Button } [2 KB]
+
+Total: 5 times
 ```
 
 ---

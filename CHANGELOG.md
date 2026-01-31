@@ -1,5 +1,13 @@
 # react-prune
 
+## 2.0.0
+
+### Major Changes
+
+- refactor!: complete rewrite of CLI using Bash scripts for better performance and simplicity.
+  feat: add `find` command to locate component/function usage with file sizes.
+  feat: improved false positive detection for Next.js and configuration files.
+
 ## 1.3.0
 
 ### Minor Changes

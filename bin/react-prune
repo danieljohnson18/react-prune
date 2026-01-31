@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# bin/react-prune
+
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(pwd)"
+
+CORE_DIR="$SCRIPT_DIR/../scripts/core"
+
+function show_help {
+    echo "react-prune - Bash Edition"
+    echo "Usage:"
+    echo "  react-prune analyze    Run full analysis (deps, files, exports)"
+    echo "  react-prune help       Show this help"
+}
+
+if [ "$1" == "analyze" ]; then
+    echo "🚀 Starting React Prune Analysis..."
+    
+    # 1. Check Deps
+    "$CORE_DIR/check_deps.sh"
+    echo ""
+
+    # 1b. Check Package Sizes
+    "$CORE_DIR/check_package_sizes.sh" "$PROJECT_ROOT"
+    echo ""
+    
+    # 2. Check Unused Files
+    "$CORE_DIR/check_unused_files.sh" "$PROJECT_ROOT"
+    echo ""
+    
+    # 3. Check Unused Exports
+    "$CORE_DIR/check_unused_exports.sh" "$PROJECT_ROOT"
+    
+elif [ "$1" == "find" ]; then
+    shift
+    "$CORE_DIR/find_usage.sh" "$1" "$PROJECT_ROOT"
+
+elif [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
+    # Read version from package.json using grep/sed to avoid jq dependency
+    VERSION=$(grep '"version":' "$CORE_DIR/../../package.json" | head -1 | sed -E 's/.*"version": "([^"]+)".*/\1/')
+    echo "react-prune version $VERSION"
+    exit 0
+
+elif [ "$1" == "help" ] || [ -z "$1" ]; then
+    show_help
+else
+    echo "Unknown command: $1"
+    show_help
+    exit 1
+fi

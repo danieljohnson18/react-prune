@@ -1,9 +1,9 @@
 {
   "name": "react-prune",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "main": "dist/index.js",
   "bin": {
-    "react-prune": "./dist/cli.js"
+    "react-prune": "./bin/react-prune"
   },
   "scripts": {
     "build": "tsup src/cli.ts --format cjs --dts",
@@ -34,6 +34,8 @@
   "author": "Daniel Arikawe",
   "license": "MIT",
   "files": [
+    "bin",
+    "scripts",
     "dist"
   ],
   "repository": {
