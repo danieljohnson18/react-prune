@@ -1,5 +1,12 @@
 # react-prune
 
+## 2.0.1
+
+### Patch Changes
+
+- feat: add package size check to `analyze` command (reports disk usage of top dependencies).
+- feat: add `--version` / `-v` flag to CLI.
+
 ## 2.0.0
 
 ### Major Changes
