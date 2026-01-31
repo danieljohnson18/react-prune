@@ -1,5 +1,11 @@
 # react-prune
 
+## 2.0.4
+
+### Patch Changes
+
+- docs: update README to reflect v2 bash architecture and features.
+
 ## 2.0.3
 
 ### Patch Changes
