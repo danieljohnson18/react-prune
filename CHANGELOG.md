@@ -1,5 +1,19 @@
 # react-prune
 
+## 2.0.6
+
+### Patch Changes
+
+- docs: add Code of Conduct and Issue Templates.
+- docs: add Pull Request template.
+- docs: add SECURITY.md policy.
+
+## 2.0.5
+
+### Patch Changes
+
+- docs: add LICENSE file.
+
 ## 2.0.4
 
 ### Patch Changes
