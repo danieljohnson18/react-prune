@@ -3,6 +3,7 @@
 # scripts/core/check_unused_files.sh
 
 ROOT_DIR="${1:-.}"
+INTERACTIVE="${2:-false}"
 FIND_SCRIPT="${0%/*}/find_files.sh"
 
 echo "🔍 Checking for unused files..."
@@ -38,6 +39,7 @@ for file in $FILES; do
         --exclude-dir="node_modules" --exclude-dir=".git" --exclude-dir="dist" --exclude-dir="build" \
         "$NAME_WITHOUT_EXT" "$ROOT_DIR" | grep -v "$file" | wc -l)
 
+
     if [ "$USAGE_COUNT" -eq 0 ]; then
         # Heuristic: if file is index.ts, check if parent folder is imported
         if [[ "$BASENAME" == "index.ts" ]] || [[ "$BASENAME" == "index.tsx" ]] || [[ "$BASENAME" == "index.js" ]]; then
@@ -49,16 +51,34 @@ for file in $FILES; do
              if [ "$USAGE_COUNT" -eq 0 ]; then
                  echo "⚠️  Unused file: $file"
                  UNUSED_COUNT=$((UNUSED_COUNT + 1))
+                 if [ "$INTERACTIVE" == "true" ]; then
+                    read -p "❓ Delete this file? (y/N) " -n 1 -r
+                    echo
+                    if [[ $REPLY =~ ^[Yy]$ ]]; then
+                        rm "$file"
+                        echo "🗑️  Deleted $file"
+                    fi
+                 fi
              fi
         else
             echo "⚠️  Unused file: $file"
             UNUSED_COUNT=$((UNUSED_COUNT + 1))
+            if [ "$INTERACTIVE" == "true" ]; then
+                read -p "❓ Delete this file? (y/N) " -n 1 -r
+                echo
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    rm "$file"
+                    echo "🗑️  Deleted $file"
+                fi
+            fi
         fi
     fi
 done
 
 if [ "$UNUSED_COUNT" -eq 0 ]; then
     echo "✅ No unused files found!"
+    exit 0
 else
     echo "found $UNUSED_COUNT unused files."
+    exit 1
 fi

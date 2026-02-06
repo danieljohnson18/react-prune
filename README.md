@@ -25,6 +25,15 @@ v2.0 Re-written entirely in **Bash** for speed and simplicity.
 - **🧹 Unused File & Export Detection**
   Identifies local source files and exports that are never imported anywhere in the project.
 
+- **🔥 Interactive Pruning**
+  Prompt to delete unused files immediately with the `--interactive` flag.
+
+- **🤖 CI/CD Ready**
+  Returns exit code **1** when issues are found, making it perfect for blocking PRs with dead code.
+
+- **🧠 Smart File Detection**
+  Respects your `.gitignore` file automatically to avoid scanning build artifacts or ignored folders.
+
 ---
 
 ## 📦 Installation
@@ -57,6 +66,8 @@ Runs a full health check: unused deps, package sizes, unused files, and unused e
 
 ```bash
 react-prune analyze
+# OR interactively delete unused files:
+react-prune analyze --interactive
 ```
 
 _Note: This runs a sequence of bash scripts optimized for Next.js/React projects._

@@ -16,6 +16,11 @@ for file in $FILES; do
     # Exclude 'default' from regex capture immediately
     EXPORTS=$(grep -E "^export (const|function|class|let|var|type|interface) " "$file" | sed -E 's/^export (const|function|class|let|var|type|interface) ([a-zA-Z0-9_]+).*/\2/')
     
+    # Capture 'export { Name, Other }' (single line)
+    # Matches "export { ... }" optionally ending with ;
+    NAMED_EXPORTS=$(grep -E "^export \{.*" "$file" | sed -E 's/^export \{//; s/\}.*//; s/,/ /g')
+    EXPORTS="$EXPORTS $NAMED_EXPORTS"
+    
     for exp in $EXPORTS; do
         # Ignore common false positives
         if [[ "$exp" == "default" ]] || [[ "$exp" == "metadata" ]] || [[ "$exp" == "generateMetadata" ]] || [[ "$exp" == "viewport" ]]; then
@@ -40,6 +45,8 @@ done
 
 if [ "$UNUSED_COUNT" -eq 0 ]; then
     echo "✅ No unused exports found!"
+    exit 0
 else
     echo "found $UNUSED_COUNT unused exports."
+    exit 1
 fi
