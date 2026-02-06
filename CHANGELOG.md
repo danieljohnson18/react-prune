@@ -1,5 +1,11 @@
 # react-prune
 
+## 2.0.7
+
+### Patch Changes
+
+- 8cfb762: Update scripts and documentation
+
 ## 2.0.6
 
 ### Patch Changes
